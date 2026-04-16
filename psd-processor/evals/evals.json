@@ -1,0 +1,29 @@
+{
+  "skill_name": "psd-processor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一个PSD文件在 E:\\Designs\\logo.psd，请帮我把它导出为PNG格式",
+      "expected_output": "应该调用psd_export.py脚本将logo.psd导出为PNG格式图片",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我需要导出这个PSD文件的所有图层，文件在 E:\\Projects\\ui-design.psd",
+      "expected_output": "应该调用psd_export_layers.py脚本将ui-design.psd的各个图层导出为单独图片",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "请批量处理 E:\\PSD_Files 文件夹中的所有PSD文件，把它们都转换成JPG格式，质量设置为90",
+      "expected_output": "应该调用psd_export.py脚本递归处理PSD_Files文件夹中的所有PSD文件，转换为JPG格式，质量90",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "我有一个包含多个PSD文件的目录 E:\\Client\\designs，请导出所有PSD的图层为PNG格式，不要导出隐藏图层",
+      "expected_output": "应该调用psd_export_layers.py脚本处理designs目录中的所有PSD文件，导出非隐藏图层为PNG",
+      "files": []
+    }
+  ]
+}

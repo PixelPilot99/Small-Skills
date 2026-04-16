@@ -1,0 +1,29 @@
+{
+  "skill_name": "media-to-text",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一个视频文件meeting.mp4，需要将它转换成文本记录。视频是关于团队周会的，请帮我提取其中的对话内容并保存为meeting_transcript.txt。",
+      "expected_output": "技能应识别这是视频转文本任务，提供使用process_media.py脚本的指导，说明需要安装moviepy和requests库，检查SKILL_ASR_API_KEY环境变量，并给出具体命令示例。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我录制了一个音频文件interview.mp3，是采访内容的录音。请帮我把这个音频文件转换成文字稿，输出为interview_text.txt。",
+      "expected_output": "技能应识别这是音频转文本任务，提供使用process_media.py脚本的指导，说明需要requests库和API密钥，并给出具体命令示例。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我有一个长视频lecture.mp4，只需要第10分钟到第20分钟的内容转换成文本。请帮我截取这个时间段并转成文字，保存为lecture_excerpt.txt。",
+      "expected_output": "技能应识别这是带时间截取的视频转文本任务，提供使用process_media.py脚本的指导，包括--start和--end参数的使用，并给出具体命令示例。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "我安装了moviepy和requests库，也设置了SKILL_ASR_API_KEY环境变量。现在有一个视频文件presentation.mp4，请告诉我具体的命令来将它转换成文本文件presentation.txt。",
+      "expected_output": "技能应提供具体的命令行指令：python scripts/process_media.py -i presentation.mp4 -o presentation.txt，并说明可能需要的其他参数。",
+      "files": []
+    }
+  ]
+}
