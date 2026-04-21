@@ -32,23 +32,6 @@ Small-Skills/
 └── README.md               # This file
 ```
 
-## Installation / 安装
-
-Each skill can be installed via the Claude Code skills marketplace:
-
-每个技能可通过 Claude Code 技能市场安装：
-
-```bash
-# Using the skill command
-/skill install <skill-name>
-
-# Or search and install from marketplace
-/skill search <keyword>
-```
-
-Alternatively, you can manually reference the `SKILL.md` file within each skill's subdirectory.
-
-或者，你也可以手动引用各技能子目录中的 `SKILL.md` 文件。
 
 ## Configuration / 配置
 
