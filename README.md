@@ -18,19 +18,6 @@ This repository houses multiple standalone skills designed to extend Claude Code
 | `pdf-strip-refs` | Remove references/bibliography section from PDF academic papers. Useful for RAG preprocessing. | 去除 PDF 学术论文中的参考文献部分，适用于 RAG 预处理场景。 |
 | `psd-processor` | Batch export PSD files to image formats (JPG/PNG). Supports exporting individual layers. | 批量将 PSD 文件导出为图片格式（JPG/PNG），支持单独导出图层。 |
 
-## Directory Structure / 目录结构
-
-```
-Small-Skills/
-├── media-to-text/          # Video/audio to text skill
-│   └── SKILL.md            # Skill definition
-├── pdf-strip-refs/         # PDF reference stripper
-│   └── SKILL.md            # Skill definition
-├── psd-processor/          # PSD batch processor
-│   └── SKILL.md            # Skill definition
-├── CLAUDE.md               # Project-level instructions
-└── README.md               # This file
-```
 
 
 ## Configuration / 配置
