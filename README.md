@@ -1,22 +1,24 @@
 # Small-Skills
 
-> A collection of lightweight, independent Claude Code skills / 一组轻量级、独立运行的 Claude Code 技能合集
+> A collection of lightweight, independent skills / 一组轻量级、独立运行的skill合集
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Overview / 简介
 
-This repository houses multiple standalone skills designed to extend Claude Code's capabilities. Each skill is self-contained in its own subdirectory and can be used independently.
+This repository houses multiple standalone skills . Each skill is self-contained in its own subdirectory and can be used independently.
 
-本仓库包含多个独立的技能，旨在扩展 Claude Code 的功能。每个技能独立存放在各自的子目录中，可单独使用。
+本仓库包含多个独立的技能。每个技能独立存放在各自的子目录中，可单独使用。
+
+// Code generated with AI assistance.代码由AI辅助生成
 
 ## Skills / 技能列表
 
-| Skill | Description | 描述 |
-|-------|-------------|------|
-| `media-to-text` | Convert video/audio to text using speech recognition. Supports clipping and multiple formats. Requires `SKILL_ASR_API_KEY` environment variable. | 视频/音频转文字工具，基于语音识别。支持剪辑和多种音视频格式。需要配置 `SKILL_ASR_API_KEY` 环境变量。 |
-| `pdf-strip-refs` | Remove references/bibliography section from PDF academic papers. Useful for RAG preprocessing. | 去除 PDF 学术论文中的参考文献部分，适用于 RAG 预处理场景。 |
-| `psd-processor` | Batch export PSD files to image formats (JPG/PNG). Supports exporting individual layers. | 批量将 PSD 文件导出为图片格式（JPG/PNG），支持单独导出图层。 |
+| Skill | Description | 描述 | Dependencies / 依赖 |
+|-------|-------------|------|---------------------|
+| `media-to-text` | Convert video/audio to text using speech recognition. Supports clipping and multiple formats. Requires `SKILL_ASR_API_KEY` environment variable. | 视频/音频转文字工具，基于语音识别。支持剪辑和多种音视频格式。需要配置 `SKILL_ASR_API_KEY` 环境变量。 | `moviepy`, `requests` + `SKILL_ASR_API_KEY` 环境变量 |
+| `pdf-strip-refs` | Remove references/bibliography section from PDF academic papers. Useful for RAG preprocessing. | 去除 PDF 学术论文中的参考文献部分，适用于 RAG 预处理场景。 | `pymupdf` |
+| `psd-processor` | Batch export PSD files to image formats (JPG/PNG). Supports exporting individual layers. | 批量将 PSD 文件导出为图片格式（JPG/PNG），支持单独导出图层。 | `psd-tools`, `Pillow` |
 
 
 
