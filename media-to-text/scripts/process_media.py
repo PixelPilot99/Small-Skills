@@ -10,8 +10,6 @@ import argparse
 import os
 import sys
 import tempfile
-import subprocess
-import shutil
 from pathlib import Path
 
 # 添加当前目录到Python路径，以便导入本地模块
@@ -32,23 +30,12 @@ def run_video_to_audio(input_video, output_audio, start=None, end=None, duration
     try:
         from Movie_to_Sound import main as video_to_audio_main
     except ImportError:
-        # 如果导入失败，尝试作为子进程运行
-        cmd = [sys.executable, "Movie_to_Sound.py", "-i", input_video, "-o", output_audio]
-        if start:
-            cmd.extend(["--start", str(start)])
-        if end:
-            cmd.extend(["--end", str(end)])
-        if duration:
-            cmd.extend(["--duration", str(duration)])
-
-        print(f"运行命令: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"视频转音频失败: {result.stderr}")
-            return False
-        return True
+        diagnose_environment(for_video=True)
+        print("错误: 无法导入 Movie_to_Sound 模块，请检查 moviepy 是否已安装")
+        return False
 
     # 模拟命令行参数
+    old_argv = sys.argv[:]
     sys.argv = ["Movie_to_Sound.py", "-i", input_video, "-o", output_audio]
     if start:
         sys.argv.extend(["--start", str(start)])
@@ -57,8 +44,11 @@ def run_video_to_audio(input_video, output_audio, start=None, end=None, duration
     if duration:
         sys.argv.extend(["--duration", str(duration)])
 
-    print(f"转换视频到音频: {input_video} -> {output_audio}")
-    return video_to_audio_main() == 0
+    try:
+        print(f"转换视频到音频: {input_video} -> {output_audio}")
+        return video_to_audio_main() == 0
+    finally:
+        sys.argv = old_argv
 
 def run_audio_to_text(input_audio, output_text):
     """运行音频转文本脚本"""
@@ -69,16 +59,12 @@ def run_audio_to_text(input_audio, output_text):
         print(f"转录完成，共{len(text)}字符")
         return True
     except ImportError:
-        # 如果导入失败，尝试作为子进程运行
-        cmd = [sys.executable, "Use_ASRmodel.py", input_audio, output_text]
-        print(f"运行命令: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"音频转文本失败: {result.stderr}")
-            return False
-        return True
+        diagnose_environment(for_video=False)
+        print("错误: 无法导入 Use_ASRmodel 模块，请检查 requests 是否已安装")
+        return False
     except Exception as e:
         print(f"音频转文本出错: {e}")
+        diagnose_environment(for_video=False)
         return False
 
 def parse_time(time_str):
@@ -102,6 +88,46 @@ def parse_time(time_str):
         return float(parts[0])
     else:
         raise ValueError(f"无法解析的时间格式: {time_str}")
+
+def diagnose_environment(for_video=False):
+    """环境诊断——仅在出错时自动调用。
+    检查依赖和API密钥配置。
+    安全：绝不打印API密钥的具体值。
+    """
+    print("\n" + "=" * 50)
+    print("  环境诊断（检测到错误，正在排查...）")
+    print("=" * 50)
+    all_ok = True
+
+    if for_video:
+        try:
+            import moviepy  # noqa: F401
+            print("  [OK] moviepy 已安装")
+        except ImportError:
+            print("  [FAIL] moviepy 未安装 → 请执行: pip install moviepy")
+            all_ok = False
+
+    try:
+        import requests  # noqa: F401
+        print("  [OK] requests 已安装")
+    except ImportError:
+        print("  [FAIL] requests 未安装 → 请执行: pip install requests")
+        all_ok = False
+
+    api_key = os.environ.get("SKILL_ASR_API_KEY")
+    if api_key:
+        print("  [OK] 环境变量 SKILL_ASR_API_KEY 已设置")
+    else:
+        print("  [FAIL] 环境变量 SKILL_ASR_API_KEY 未设置")
+        print("  → 请参考技能文档设置此环境变量（切勿在任何地方暴露密钥内容）")
+        all_ok = False
+
+    if not all_ok:
+        print("\n  → 请修复以上问题后重试")
+    else:
+        print("\n  → 环境和依赖均正常，可能是网络或文件问题，请检查网络连接")
+    print("=" * 50)
+
 
 def main():
     parser = argparse.ArgumentParser(description='将视频或音频文件转换为文本')
@@ -196,6 +222,7 @@ def main():
         print(f"处理过程中出现错误: {e}")
         import traceback
         traceback.print_exc()
+        diagnose_environment(for_video=is_video_file(args.input))
         return 99
 
     finally:
