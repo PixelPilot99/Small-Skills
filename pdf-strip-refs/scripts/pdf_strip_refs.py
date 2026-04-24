@@ -125,11 +125,11 @@ def get_paths() -> tuple[str, str]:
     parser.add_argument("--output", "-o", help="处理后的输出目录", default=None)
     args = parser.parse_args()
 
-    input_dir  = args.input  or input("请输入 PDF 所在目录：").strip()
-    output_dir = args.output or input("请输入输出目录（留空则在输入目录下创建 no_refs 子目录）：").strip()
+    if not args.input:
+        raise ValueError("必须提供 -i/--input 参数（PDF 输入目录）")
 
-    if not output_dir:
-        output_dir = os.path.join(input_dir, "no_refs")
+    input_dir  = args.input.strip()
+    output_dir = (args.output or os.path.join(input_dir, "no_refs")).strip()
 
     return input_dir, output_dir
 

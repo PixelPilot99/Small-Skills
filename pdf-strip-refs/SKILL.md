@@ -8,74 +8,58 @@ license: MIT
 
 ## 概述
 
-该技能提供去除PDF文档中参考文献部分的功能，适用于RAG（检索增强生成）预处理。通过识别“References”、“Bibliography”等标题，自动删除参考文献及后续页面，保留正文内容。
+去除PDF文档中的参考文献部分，适用于RAG预处理。通过识别”References”、”Bibliography”、”参考文献”等标题，自动删除参考文献及后续页面。
 
-## 使用方法
+## 调用方式
 
-### 命令行调用（在Claude Code中使用）
+### 单个文件（推荐）
 
-```bash
-python scripts/pdf_strip_refs.py -i /path/to/pdf/directory -o /path/to/output/directory
-```
-
-### 交互式运行
+直接用 `python -c` 导入函数处理，适用于单个或少量文件：
 
 ```bash
-python scripts/pdf_strip_refs.py
+python -c “
+import sys
+sys.path.insert(0, r'<skill_dir>/scripts')
+from pdf_strip_refs import strip_references
+strip_references(r'input.pdf', r'output.pdf')
+“
 ```
 
-### 在Python代码中直接调用
+输出文件名约定：在原文件名后加 `_no_refs` 后缀（如 `paper_no_refs.pdf`）。
 
-```python
-from scripts.pdf_strip_refs import strip_references, batch_strip
+### 批量处理（目录级别）
 
-# 处理单个PDF
-strip_references("input.pdf", "output.pdf")
+当用户需要批量处理一个目录下的所有 PDF 时才用此方式：
 
-# 批量处理
-batch_strip("/path/to/input", "/path/to/output")
+```bash
+python <skill_dir>/scripts/pdf_strip_refs.py -i /path/to/pdf/dir -o /path/to/output/dir
 ```
 
-## 参数说明
-
+参数：
 - `-i, --input`: PDF文件所在目录（必需）
-- `-o, --output`: 处理后PDF的输出目录（可选，默认为输入目录下的`no_refs`子目录）
+- `-o, --output`: 输出目录（**调用时始终提供此参数**，避免回退到交互式输入导致 EOFError）
 
-## 检测的关键词
+## 执行策略
 
-脚本会自动识别以下参考文献标题（不区分大小写）：
+**不要预先检查依赖。** 直接运行上述命令。只有当 `import fitz` 报 `ModuleNotFoundError` 时，才执行 `pip install pymupdf` 后重试。
 
-- References
-- REFERENCES
-- Bibliography
-- BIBLIOGRAPHY
+## 检测关键词
+
+以下标题会被识别为参考文献起始位置（完整匹配一个文本块，不区分大小写）：
+
+- References / REFERENCES
+- Bibliography / BIBLIOGRAPHY
 - 参考文献
 
 ## 输出说明
 
-- 如果找到参考文献标题：截断该位置及之后的所有内容，生成新文件（文件名添加`_no_refs`后缀）
-- 如果未找到参考文献标题：原样复制PDF文件
-- 输出文件保存在指定输出目录中
-
-## 依赖项
-
-```bash
-pip install pymupdf
-```
-
-## 示例
-
-```bash
-# 批量处理当前目录下的PDF文件
-python scripts/pdf_strip_refs.py -i ./pdfs -o ./processed
-
-# 交互式运行（会提示输入目录）
-python scripts/pdf_strip_refs.py
-```
+- 找到参考文献：截断该位置及后续内容，输出 `_no_refs.pdf`
+- 未找到：原样复制 PDF（不会丢失内容）
+- 返回值 `True` = 已截断，`False` = 未找到参考文献
 
 ## 注意事项
 
-1. 仅支持PDF格式文件
-2. 参考文献标题必须单独成行（作为一个文本块）
-3. 使用pymupdf的redaction功能永久删除文本层内容
-4. 处理后的PDF可能会丢失参考文献部分的文本，但保留原始格式
+1. 参考文献标题必须单独成行（作为一个文本块），不会被正文中的孤立单词误触发
+2. 使用 pymupdf redaction 永久删除文本层内容，不可逆
+3. 单文件场景请勿用 CLI 参数——CLI 要求输入目录，多余且不灵活
+4. **`-o` 参数在 agent/CI 下必须提供。** 脚本中 `get_paths()` 在未提供 `-o` 时会回退到 `input()` 交互式输入，而非交互式环境（agent 调用、CI 流水线）中 `input()` 会抛出 `EOFError` 导致脚本崩溃。
