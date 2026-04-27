@@ -189,11 +189,42 @@ def main():
 
         elif is_audio_file(args.input):
             print(f"检测到音频文件: {args.input}")
-            audio_file_to_use = args.input
 
-            # 如果指定了时间参数，需要先截取音频（当前版本不支持，输出警告）
+            # 如果指定了时间参数，截取音频片段
             if start_sec or end_sec or duration_sec:
-                print("警告: 音频文件的时间截取功能暂未实现，将处理整个音频文件")
+                try:
+                    from moviepy import AudioFileClip  # MoviePy 2.x
+                    _USE_V1_AUDIO = False
+                except ImportError:
+                    from moviepy.editor import AudioFileClip  # MoviePy 1.x
+                    _USE_V1_AUDIO = True
+
+                # 创建临时音频文件
+                temp_dir = tempfile.gettempdir()
+                temp_audio_file = os.path.join(temp_dir, f"temp_audio_trimmed_{os.getpid()}.mp3")
+
+                clip_start = start_sec if start_sec is not None else 0
+                if duration_sec is not None:
+                    clip_end = clip_start + duration_sec
+                else:
+                    clip_end = end_sec
+
+                print(f"截取音频片段: {clip_start}s — {clip_end}s")
+                audio_clip = AudioFileClip(args.input)
+                if clip_end is None or clip_end > audio_clip.duration:
+                    clip_end = audio_clip.duration
+                if _USE_V1_AUDIO:
+                    segment = audio_clip.subclip(clip_start, clip_end)
+                    segment.write_audiofile(temp_audio_file, verbose=False, logger=None)
+                else:
+                    segment = audio_clip.subclipped(clip_start, clip_end)
+                    segment.write_audiofile(temp_audio_file, codec='libmp3lame')
+                audio_clip.close()
+                segment.close()
+                print("音频截取完成")
+                audio_file_to_use = temp_audio_file
+            else:
+                audio_file_to_use = args.input
 
         else:
             print(f"错误: 不支持的文件格式 - {args.input}")

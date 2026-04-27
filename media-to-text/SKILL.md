@@ -12,26 +12,13 @@ compatibility: 需要Python环境及moviepy、requests库，需要设置SKILL_AS
 1. **视频转音频**：使用MoviePy库从视频文件中提取音频并保存为MP3格式
 2. **音频转文本**：通过SiliconFlow的ASR API将音频文件转录为文本
 
-## 先决条件
+## 依赖说明
 
-### 1. Python依赖
-确保已安装以下Python库：
-```bash
-pip install moviepy requests
-```
+运行所需依赖（脚本出错时会自动诊断，无需提前手动检查）：
 
-### 2. API密钥
-需要设置环境变量`SKILL_ASR_API_KEY`，包含SiliconFlow平台的API密钥：
-```bash
-# Windows
-setx SKILL_ASR_API_KEY "your-api-key-here"
-
-# Linux/macOS
-export SKILL_ASR_API_KEY="your-api-key-here"
-```
-
-### 3. 文件权限
-确保有读取输入文件和写入输出文件的权限。
+- **Python库**：`moviepy`, `requests`
+- **环境变量**：`SKILL_ASR_API_KEY`（SiliconFlow API 密钥）
+- **文件权限**：读取输入文件、写入输出文件
 
 ## 使用方法
 
@@ -63,19 +50,16 @@ python scripts/process_media.py -i 输入音频文件 -o 输出文本文件
 ## 工作流程
 
 1. **检测输入文件类型**
-   - 如果是视频文件（.mp4, .mov, .avi等），先使用`Movie_to_Sound.py`提取音频
-   - 如果是音频文件（.mp3, .wav, .m4a等），直接进入下一步
+   - 视频文件（.mp4/.avi/.mov 等）→ `Movie_to_Sound.py` 提取音频
+   - 音频文件（.mp3/.wav/.m4a 等）→ 直接使用
 
-2. **视频截取处理**（如果指定了时间参数）
-   - 根据`--start`、`--end`或`--duration`参数截取指定时间段的音频
+2. **时间截取**（如果指定了 `--start`/`--end`/`--duration`）
+   - 视频：`Movie_to_Sound.py` 同时完成提取和截取
+   - 音频：主脚本直接用 `AudioFileClip` 截取
 
-3. **语音识别**
-   - 使用`Use_ASRmodel.py`调用SiliconFlow ASR API进行转录
-   - API模型：FunAudioLLM/SenseVoiceSmall
+3. **语音识别** → `Use_ASRmodel.py` 调用 SiliconFlow ASR API
 
-4. **结果保存**
-   - 将转录文本保存到指定的输出文件
-   - 根据`--keep-audio`决定是否保留中间音频文件
+4. **结果保存与临时文件清理**
 
 ## 示例
 
@@ -130,35 +114,15 @@ python scripts/process_media.py -i video.mp4 -o output.txt --keep-audio --audio-
 
 ## 错误处理
 
-### 自动诊断机制
-出错时脚本会自动调用环境诊断，检查以下项目（无需提前手动检查）：
-1. **moviepy库**（视频文件时需要）— 是否已安装
-2. **requests库** — 是否已安装
-3. **SKILL_ASR_API_KEY环境变量** — 是否已设置（仅检查是否存在，不显示密钥值）
+**出错时脚本自动诊断**（无需提前手动检查）：依赖库、API密钥、网络连接。根据诊断结果修复后重试即可。
 
-### 常见错误及解决方法
-1. **API密钥错误**：检查`SKILL_ASR_API_KEY`环境变量是否正确设置（脚本出错时会自动检测）
-2. **文件不存在**：确认输入文件路径正确
-3. **时间参数无效**：检查时间格式是否正确，确保开始时间小于结束时间
-4. **依赖缺失**：确保已安装moviepy和requests库（脚本出错时会自动检测并给出安装命令）
-5. **网络错误**：检查网络连接，确认能访问SiliconFlow API
+退出码：`0`=成功，`1`=文件不存在，`2`=时间参数冲突，`3`=视频转音频失败，`4`=音频未生成，`5`=不支持格式，`6`=语音识别失败，`99`=未知错误。
 
-### 错误代码
-- `0`：成功
-- `1`：输入文件不存在
-- `2`：时间参数冲突（同时指定了--end和--duration）
-- `3`：视频转音频失败
-- `4`：音频文件未生成
-- `5`：不支持的文件格式
-- `6`：音频转文本失败
-- `99`：未知错误
+## 提示
 
-## 性能提示
-
-1. **大文件处理**：对于长视频，考虑先截取关键片段以减少处理时间
-2. **批量处理**：可以编写脚本批量处理多个文件
-3. **音频质量**：确保音频清晰度以获得最佳转录效果
-4. **网络连接**：API调用需要稳定的网络连接
+- 长文件优先截取片段处理
+- 音频清晰度直接影响转录质量
+- ASR API 需要网络连接
 
 ## 注意事项
 
@@ -169,43 +133,7 @@ python scripts/process_media.py -i video.mp4 -o output.txt --keep-audio --audio-
 
 ## 安全提示
 
-### API密钥保护
-**重要**：`SKILL_ASR_API_KEY`是敏感凭据，请勿在日志、控制台输出或任何可公开访问的位置显示。
-
-**安全检查方法**（不暴露密钥）：
-```bash
-# 检查环境变量是否设置（不显示值）
-# Windows PowerShell
-if ($env:SKILL_ASR_API_KEY) { echo "API密钥已设置" } else { echo "API密钥未设置" }
-
-# Windows CMD
-if defined SKILL_ASR_API_KEY (echo API密钥已设置) else (echo API密钥未设置)
-
-# Linux/macOS
-if [ -n "$SKILL_ASR_API_KEY" ]; then echo "API密钥已设置"; else echo "API密钥未设置"; fi
-
-# Python检查
-python -c "import os; print('API密钥已设置' if os.getenv('SKILL_ASR_API_KEY') else 'API密钥未设置')"
-```
-
-**错误做法**（会暴露密钥）：
-```bash
-# ❌ 危险：直接显示API密钥
-echo $SKILL_ASR_API_KEY
-echo %SKILL_ASR_API_KEY%
-print(os.getenv('SKILL_ASR_API_KEY'))  # 在代码中直接打印
-```
-
-### 使用本技能时的安全指南
-1. **不要要求Claude显示或验证API密钥的具体内容**，只需确认环境变量是否存在
-2. **在调试时**，使用上述安全检查方法，避免密钥泄露
-3. **在共享日志或截图时**，确保API密钥被遮盖或删除
-4. **定期轮换密钥**，特别是如果怀疑密钥可能已泄露
-
-### 技能内置保护
-- 本技能的脚本只会检查`SKILL_ASR_API_KEY`是否存在，不会在日志中输出其内容
-- API调用使用标准Authorization头，密钥在HTTPS请求中加密传输
-- 临时文件处理完成后会自动清理，不保留敏感数据
+`SKILL_ASR_API_KEY`是敏感凭据，请勿在任何输出中暴露。脚本内置保护：只检查该变量是否存在，不会在日志中显示其值。API 调用通过 HTTPS 加密传输。
 
 ## 扩展使用
 
